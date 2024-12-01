@@ -11,16 +11,24 @@ import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.util.Duration;
 
-public abstract class LevelParent extends Observable {
+public class Level extends Observable {
 
 	private static final double SCREEN_HEIGHT_ADJUSTMENT = 150;
 	private static final int MILLISECOND_DELAY = 50;
 	private final double screenHeight;
 	private final double screenWidth;
 	private final double enemyMaximumYPosition;
+	private static final int PLAYER_INITIAL_HEALTH = 5;
+	private final Boss boss;
+	
+	private int nextLevel;
+	private int totalEnemies;
+	private int killsToAdvance;
+	private double enemySpawnProbability;
+	private double bossSpawnProbability;
 
 	private final Group root;
-	private final Timeline timeline;
+	private final GameLoop gameLoop;
 	private final UserPlane user;
 	private final Scene scene;
 	private final ImageView background;
@@ -33,33 +41,66 @@ public abstract class LevelParent extends Observable {
 	private int currentNumberOfEnemies;
 	private LevelView levelView;
 
-	public LevelParent(String backgroundImageName, double screenHeight, double screenWidth, int playerInitialHealth) {
+	public Level(Difficulty difficulty, double screenHeight, double screenWidth) {
 		this.root = new Group();
 		this.scene = new Scene(root, screenWidth, screenHeight);
-		this.timeline = new Timeline();
-		this.user = new UserPlane(playerInitialHealth);
+		this.gameLoop = new GameLoop(this::updateScene, MILLISECOND_DELAY);
+		this.user = new UserPlane(PLAYER_INITIAL_HEALTH);
 		this.friendlyUnits = new ArrayList<>();
 		this.enemyUnits = new ArrayList<>();
 		this.userProjectiles = new ArrayList<>();
 		this.enemyProjectiles = new ArrayList<>();
 
-		this.background = new ImageView(new Image(getClass().getResource(backgroundImageName).toExternalForm()));
+		this.background = new ImageView(new Image(getClass().getResource(difficulty.getBackground()).toExternalForm()));
+		this.nextLevel = difficulty.getNext();
+		this.totalEnemies = difficulty.getTotalEnemies();
+		this.killsToAdvance = difficulty.getKillsToAdvance();
+		this.enemySpawnProbability = difficulty.getEnemySpawnProbability();
+		this.bossSpawnProbability = difficulty.getBossSpawnProbability();
 		this.screenHeight = screenHeight;
 		this.screenWidth = screenWidth;
 		this.enemyMaximumYPosition = screenHeight - SCREEN_HEIGHT_ADJUSTMENT;
 		this.levelView = instantiateLevelView();
 		this.currentNumberOfEnemies = 0;
-		initializeTimeline();
+		friendlyUnits.add(user);
+		boss = new Boss();
 		friendlyUnits.add(user);
 	}
 
-	protected abstract void initializeFriendlyUnits();
+	protected void initializeFriendlyUnits() {
+		getRoot().getChildren().add(getUser());
+	}
 
-	protected abstract void checkIfGameOver();
+	protected void checkIfGameOver() {
+		if (userIsDestroyed()) {
+			loseGame();
+		}
+		else if (userHasReachedKillTarget())
+			goToNextLevel(nextLevel);
+	}
 
-	protected abstract void spawnEnemyUnits();
 
-	protected abstract LevelView instantiateLevelView();
+	private boolean userHasReachedKillTarget() {
+		return getUser().getNumberOfKills() >= killsToAdvance;
+	}
+
+	protected void spawnEnemyUnits() {
+		int currentNumberOfEnemies = getCurrentNumberOfEnemies();
+		for (int i = 0; i < totalEnemies - currentNumberOfEnemies; i++) {
+			double x = Math.random();
+			if ( x < bossSpawnProbability) {
+				addEnemyUnit(boss);
+			}else if (x < bossSpawnProbability + enemySpawnProbability) {
+				double newEnemyInitialYPosition = Math.random() * getEnemyMaximumYPosition();
+				ActiveActorDestructible newEnemy = new EnemyPlane(getScreenWidth(), newEnemyInitialYPosition);
+				addEnemyUnit(newEnemy);
+			}
+		}
+	}
+
+	protected LevelView instantiateLevelView() {
+		return new LevelView(getRoot(), PLAYER_INITIAL_HEALTH);
+	}
 
 	public Scene initializeScene() {
 		initializeBackground();
@@ -70,13 +111,13 @@ public abstract class LevelParent extends Observable {
 
 	public void startGame() {
 		background.requestFocus();
-		timeline.play();
+		gameLoop.start();
 	}
 
-	public void goToNextLevel(String levelName) {
-		timeline.stop();
+	public void goToNextLevel(int nextLevel) {
+		gameLoop.stop();
 		setChanged();
-		notifyObservers(levelName);
+		notifyObservers(nextLevel);
 	}
 
 	private void updateScene() {
@@ -92,12 +133,6 @@ public abstract class LevelParent extends Observable {
 		updateKillCount();
 		updateLevelView();
 		checkIfGameOver();
-	}
-
-	private void initializeTimeline() {
-		timeline.setCycleCount(Timeline.INDEFINITE);
-		KeyFrame gameLoop = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> updateScene());
-		timeline.getKeyFrames().add(gameLoop);
 	}
 
 	private void initializeBackground() {
@@ -206,13 +241,8 @@ public abstract class LevelParent extends Observable {
 		return Math.abs(enemy.getTranslateX()) > screenWidth;
 	}
 
-	protected void winGame() {
-		timeline.stop();
-		levelView.showWinImage();
-	}
-
 	protected void loseGame() {
-		timeline.stop();
+		gameLoop.stop();
 		levelView.showGameOverImage();
 	}
 
@@ -225,6 +255,7 @@ public abstract class LevelParent extends Observable {
 	}
 
 	protected int getCurrentNumberOfEnemies() {
+		System.out.printf("%d\n", enemyUnits.size());
 		return enemyUnits.size();
 	}
 
