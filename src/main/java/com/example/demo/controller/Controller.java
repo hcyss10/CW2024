@@ -1,9 +1,9 @@
 package com.example.demo.controller;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Observable;
-import java.util.Observer;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import com.example.demo.Difficulty;
 import com.example.demo.Level;
 
-public class Controller implements Observer {
+public class Controller implements PropertyChangeListener {
 
 	private final Stage stage;
 
@@ -30,9 +30,8 @@ public class Controller implements Observer {
 
 	private void goToLevel(int level) throws ClassNotFoundException, NoSuchMethodException, SecurityException,
 			InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		Difficulty difficulty = new Difficulty(level);
-		Level myLevel = new Level(difficulty, stage.getHeight(), stage.getWidth());
-		myLevel.addObserver(this);
+		Level myLevel = new Level(new Difficulty(level), stage.getHeight(), stage.getWidth());
+		myLevel.addPropertyChangeListener(this);
 		Scene scene = myLevel.initializeScene();
 		stage.setScene(scene);
 		myLevel.startGame();
@@ -40,9 +39,9 @@ public class Controller implements Observer {
 	}
 
 	@Override
-	public void update(Observable arg0, Object arg1) {
+	public void propertyChange(PropertyChangeEvent evt) {
 		try {
-			goToLevel((int) arg1);
+			goToLevel((int) evt.getNewValue());
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			Alert alert = new Alert(AlertType.ERROR);

@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,7 +13,7 @@ import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.util.Duration;
 
-public class Level extends Observable {
+public class Level {
 
 	private static final double SCREEN_HEIGHT_ADJUSTMENT = 150;
 	private static final int MILLISECOND_DELAY = 50;
@@ -20,8 +22,9 @@ public class Level extends Observable {
 	private final double enemyMaximumYPosition;
 	private static final int PLAYER_INITIAL_HEALTH = 5;
 	private final Boss boss;
+    private PropertyChangeSupport support;
 	
-	private int nextLevel;
+	private int currentLevel;
 	private int totalEnemies;
 	private int killsToAdvance;
 	private double enemySpawnProbability;
@@ -50,9 +53,10 @@ public class Level extends Observable {
 		this.enemyUnits = new ArrayList<>();
 		this.userProjectiles = new ArrayList<>();
 		this.enemyProjectiles = new ArrayList<>();
+        support = new PropertyChangeSupport(this);
 
 		this.background = new ImageView(new Image(getClass().getResource(difficulty.getBackground()).toExternalForm()));
-		this.nextLevel = difficulty.getNext();
+		this.currentLevel = difficulty.getLevel();
 		this.totalEnemies = difficulty.getTotalEnemies();
 		this.killsToAdvance = difficulty.getKillsToAdvance();
 		this.enemySpawnProbability = difficulty.getEnemySpawnProbability();
@@ -66,6 +70,10 @@ public class Level extends Observable {
 		boss = new Boss();
 		friendlyUnits.add(user);
 	}
+	
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        support.addPropertyChangeListener(pcl);
+    }
 
 	protected void initializeFriendlyUnits() {
 		getRoot().getChildren().add(getUser());
@@ -76,7 +84,7 @@ public class Level extends Observable {
 			loseGame();
 		}
 		else if (userHasReachedKillTarget())
-			goToNextLevel(nextLevel);
+			goToNextLevel();
 	}
 
 
@@ -114,10 +122,11 @@ public class Level extends Observable {
 		gameLoop.start();
 	}
 
-	public void goToNextLevel(int nextLevel) {
+	public void goToNextLevel() {
 		gameLoop.stop();
-		setChanged();
-		notifyObservers(nextLevel);
+		support.firePropertyChange("currentLevel", this.currentLevel, this.currentLevel + 1);
+		//setChanged();
+		//notifyObservers(nextLevel);
 	}
 
 	private void updateScene() {

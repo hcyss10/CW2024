@@ -3,7 +3,7 @@ package com.example.demo;
 public class Difficulty {
 	private static final String[] BACKGROUNDS = { "/com/example/demo/images/background1.jpg", "/com/example/demo/images/background2.jpg", "/com/example/demo/images/background3.jpg" };
 	private String background;
-	private int next;
+	private int level;
 	private int totalEnemies;
 	private static final int[] KILLS_TO_ADVANCE = { 2, 5, 1 };
 	private int killsToAdvance;
@@ -12,7 +12,7 @@ public class Difficulty {
 	
 	public Difficulty(int level) {
 		this.setBackground(BACKGROUNDS[level % BACKGROUNDS.length]); 
-		this.setNext(level + 1);
+		this.setLevel(level);
 		this.setTotalEnemies(Math.min(10, 4 + level));
 		this.setKillsToAdvance(KILLS_TO_ADVANCE[level % KILLS_TO_ADVANCE.length]);
 		this.setEnemySpawnProbability((level % 3 == 2) ? 0 : (Math.min(1, 0.1 + level*0.05)));
@@ -27,12 +27,12 @@ public class Difficulty {
 		this.background = background;
 	}
 
-	public int getNext() {
-		return next;
+	public int getLevel() {
+		return level;
 	}
 
-	public void setNext(int next) {
-		this.next = next;
+	public void setLevel(int level) {
+		this.level = level;
 	}
 
 	public int getTotalEnemies() {
