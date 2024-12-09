@@ -5,6 +5,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -23,10 +25,10 @@ public class Level {
     private PropertyChangeSupport support;
 	
 	private int currentLevel;
-	private int totalEnemies;
+	private int maxEnemies;
 	private int killsToAdvance;
 	private double enemySpawnProbability;
-	private double bossSpawnProbability;
+	private boolean isBossBattle;
 
 	private final Group root;
 	private final GameLoop gameLoop;
@@ -39,7 +41,6 @@ public class Level {
 	private final List<ActiveActorDestructible> userProjectiles;
 	private final List<ActiveActorDestructible> enemyProjectiles;
 	
-	private int currentNumberOfEnemies;
 	private LevelView levelView;
 
 	public Level(Difficulty difficulty, double screenHeight, double screenWidth) {
@@ -55,18 +56,16 @@ public class Level {
 
 		this.background = new ImageView(new Image(getClass().getResource(difficulty.getBackground()).toExternalForm()));
 		this.currentLevel = difficulty.getLevel();
-		this.totalEnemies = difficulty.getTotalEnemies();
+		this.maxEnemies = difficulty.getMaxEnemies();
 		this.killsToAdvance = difficulty.getKillsToAdvance();
 		this.enemySpawnProbability = difficulty.getEnemySpawnProbability();
-		this.bossSpawnProbability = difficulty.getBossSpawnProbability();
+		this.isBossBattle = difficulty.isBossBattle();
 		this.screenHeight = screenHeight;
 		this.screenWidth = screenWidth;
 		this.enemyMaximumYPosition = screenHeight - SCREEN_HEIGHT_ADJUSTMENT;
 		this.levelView = instantiateLevelView();
-		this.currentNumberOfEnemies = 0;
 		friendlyUnits.add(user);
 		boss = new Boss();
-		friendlyUnits.add(user);
 	}
 	
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
@@ -77,26 +76,17 @@ public class Level {
 		getRoot().getChildren().add(getUser());
 	}
 
-	protected void checkIfGameOver() {
-		if (userIsDestroyed()) {
-			loseGame();
-		}
-		else if (userHasReachedKillTarget())
-			goToNextLevel();
-	}
-
-
 	private boolean userHasReachedKillTarget() {
 		return getUser().getNumberOfKills() >= killsToAdvance;
 	}
 
 	protected void spawnEnemyUnits() {
-		int currentNumberOfEnemies = getCurrentNumberOfEnemies();
-		for (int i = 0; i < totalEnemies - currentNumberOfEnemies; i++) {
+		int enemiesToBeSpawned = this.maxEnemies - enemyUnits.size();
+		for (int i = 0; i < enemiesToBeSpawned; i++) {
 			double x = Math.random();
-			if ( x < bossSpawnProbability) {
+			if (isBossBattle) {
 				addEnemyUnit(boss);
-			}else if (x < bossSpawnProbability + enemySpawnProbability) {
+			}else if (x < enemySpawnProbability) {
 				double newEnemyInitialYPosition = Math.random() * getEnemyMaximumYPosition();
 				ActiveActorDestructible newEnemy = new EnemyPlane(getScreenWidth(), newEnemyInitialYPosition);
 				addEnemyUnit(newEnemy);
@@ -112,12 +102,24 @@ public class Level {
 		initializeBackground();
 		initializeFriendlyUnits();
 		levelView.showHeartDisplay();
+		levelView.showShield();
 		return scene;
 	}
 
 	public void startGame() {
 		background.requestFocus();
 		gameLoop.start();
+		levelView.shieldImage.visibleProperty().bind(boss.shieldedProperty());
+		user.healthProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				if (user.getHealth() == 0)
+					loseGame();
+				levelView.heartDisplay.setHearts(newValue.intValue());
+			}
+		});
+		
 	}
 
 	public void goToNextLevel() {
@@ -125,33 +127,28 @@ public class Level {
 		support.firePropertyChange("currentLevel", currentLevel, currentLevel + 1);
 	}
 	
-	public void updateShield() {
-		if(boss.isShielded())
-			levelView.showShield();
-		else
-			levelView.hideShield();
+	public void updateBackground() {
+		if(background.getLayoutX() <= -screenWidth)
+			background.setLayoutX(0);
+		background.setLayoutX(background.getLayoutX() + background.getTranslateX());
 	}
 
 	private void updateScene() {
-		updateShield();
+		updateBackground();
 		spawnEnemyUnits();
 		updateActors();
 		generateEnemyFire();
-		updateNumberOfEnemies();
 		handleEnemyPenetration();
 		handleUserProjectileCollisions();
 		handleEnemyProjectileCollisions();
 		handlePlaneCollisions();
 		removeAllDestroyedActors();
-		updateKillCount();
-		updateLevelView();
-		checkIfGameOver();
 	}
 
 	private void initializeBackground() {
 		background.setFocusTraversable(true);
 		background.setFitHeight(screenHeight);
-		background.setFitWidth(screenWidth);
+		background.setTranslateX(-3);
 		background.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent e) {
 				KeyCode kc = e.getCode();
@@ -212,23 +209,30 @@ public class Level {
 	}
 
 	private void handleUserProjectileCollisions() {
-		handleCollisions(userProjectiles, enemyUnits);
+		user.incrementKillCount(handleCollisions(userProjectiles, enemyUnits));
+		if (userHasReachedKillTarget())
+			goToNextLevel();
+		
 	}
 
 	private void handleEnemyProjectileCollisions() {
 		handleCollisions(enemyProjectiles, friendlyUnits);
 	}
 
-	private void handleCollisions(List<ActiveActorDestructible> actors1,
+	private int handleCollisions(List<ActiveActorDestructible> actors1,
 			List<ActiveActorDestructible> actors2) {
+		int hits = 0;
 		for (ActiveActorDestructible actor : actors2) {
 			for (ActiveActorDestructible otherActor : actors1) {
 				if (actor.getBoundsInParent().intersects(otherActor.getBoundsInParent())) {
 					actor.takeDamage();
 					otherActor.takeDamage();
+					if(actor.isDestroyed())
+						hits++;
 				}
 			}
 		}
+		return hits;
 	}
 
 	private void handleEnemyPenetration() {
@@ -238,17 +242,7 @@ public class Level {
 				enemy.destroy();
 			}
 		}
-	}
-
-	private void updateLevelView() {
-		levelView.removeHearts(user.getHealth());
-	}
-
-	private void updateKillCount() {
-		for (int i = 0; i < currentNumberOfEnemies - enemyUnits.size(); i++) {
-			user.incrementKillCount();
-		}
-	}
+	}	
 
 	private boolean enemyHasPenetratedDefenses(ActiveActorDestructible enemy) {
 		return Math.abs(enemy.getTranslateX()) > screenWidth;
@@ -267,11 +261,6 @@ public class Level {
 		return root;
 	}
 
-	protected int getCurrentNumberOfEnemies() {
-		//System.out.printf("%d\n", enemyUnits.size());
-		return enemyUnits.size();
-	}
-
 	protected void addEnemyUnit(ActiveActorDestructible enemy) {
 		enemyUnits.add(enemy);
 		root.getChildren().add(enemy);
@@ -284,13 +273,5 @@ public class Level {
 	protected double getScreenWidth() {
 		return screenWidth;
 	}
-
-	protected boolean userIsDestroyed() {
-		return user.isDestroyed();
-	}
-
-	private void updateNumberOfEnemies() {
-		currentNumberOfEnemies = enemyUnits.size();
-	}
-
+	
 }

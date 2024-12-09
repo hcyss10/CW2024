@@ -6,19 +6,17 @@ import javafx.scene.Group;
 public class LevelView {
 	
 	private static final double HEART_DISPLAY_X_POSITION = 5;
-	private static final double HEART_DISPLAY_Y_POSITION = 25;
+	private static final double HEART_DISPLAY_Y_POSITION = 5;
 	private static final int LOSS_SCREEN_X_POSITION = -160;
 	private static final int LOSS_SCREEN_Y_POSISITION = -375;
+	private static final int SHIELD_X_POSITION = 1245;
+	private static final int SHIELD_Y_POSITION = 5;
 	private final Group root;
 	private final GameOverImage gameOverImage;
-	private final HeartDisplay heartDisplay;
+	protected final HeartDisplay heartDisplay;
+	protected final ShieldImage shieldImage;
 	//private final Button pause;
 	//private final PauseMenu pauseMenu;
-	
-
-	private static final int SHIELD_X_POSITION = 1000;
-	private static final int SHIELD_Y_POSITION = 5;
-	private final ShieldImage shieldImage;
 	
 	public LevelView(Group root, int heartsToDisplay) {
 		this.root = root;
@@ -37,28 +35,15 @@ public class LevelView {
 	public void showGameOverImage() {
 		root.getChildren().add(gameOverImage);
 	}
-	
-	public void removeHearts(int heartsRemaining) {
-		int currentNumberOfHearts = heartDisplay.getContainer().getChildren().size();
-		for (int i = 0; i < currentNumberOfHearts - heartsRemaining; i++) {
-			heartDisplay.removeHeart();
-		}
-	}
 
+	public void showShield() {
+		root.getChildren().add(shieldImage);
+	}
+	
 	/*public void showPauseMenu() {
 		//stop_timeline
 		root.getChildren().add(pauseMenu);
 	}*/
 	
-	public void showShield() {
-		if (!root.getChildren().contains(shieldImage)) {
-			root.getChildren().add(shieldImage); // Add shield to root if not already added
-		}
-		shieldImage.showShield();
-	}
-
-	public void hideShield() {
-		shieldImage.hideShield();
-	}
 
 }

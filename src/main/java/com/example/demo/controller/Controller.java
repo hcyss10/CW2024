@@ -2,7 +2,6 @@ package com.example.demo.controller;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import javafx.scene.Scene;
@@ -16,6 +15,8 @@ import com.example.demo.Level;
 public class Controller implements PropertyChangeListener {
 
 	private final Stage stage;
+	private static final int SCREEN_WIDTH = 1300;
+	private static final int SCREEN_HEIGHT = 750;
 
 	public Controller(Stage stage) {
 		this.stage = stage;
@@ -30,7 +31,7 @@ public class Controller implements PropertyChangeListener {
 
 	private void goToLevel(int level) throws ClassNotFoundException, NoSuchMethodException, SecurityException,
 			InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		Level myLevel = new Level(new Difficulty(level), stage.getHeight(), stage.getWidth());
+		Level myLevel = new Level(new Difficulty(level), SCREEN_HEIGHT, SCREEN_WIDTH);
 		myLevel.addPropertyChangeListener(this);
 		Scene scene = myLevel.initializeScene();
 		stage.setScene(scene);

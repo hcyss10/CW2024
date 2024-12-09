@@ -2,25 +2,28 @@ package com.example.demo;
 
 import java.util.*;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+
 public class Boss extends FighterPlane {
 
 	private static final String IMAGE_NAME = "bossplane.png";
 	private static final double INITIAL_X_POSITION = 1000.0;
 	private static final double INITIAL_Y_POSITION = 400;
-	private static final double PROJECTILE_Y_POSITION_OFFSET = 75.0;
+	private static final double PROJECTILE_Y_POSITION_OFFSET = 5;
 	private static final double BOSS_FIRE_RATE = .04;
 	private static final double BOSS_SHIELD_PROBABILITY = .002;
-	private static final int IMAGE_HEIGHT = 300;
+	private static final int IMAGE_HEIGHT = 50;
 	private static final int VERTICAL_VELOCITY = 8;
 	private static final int HEALTH = 100;
 	private static final int MOVE_FREQUENCY_PER_CYCLE = 5;
 	private static final int ZERO = 0;
 	private static final int MAX_FRAMES_WITH_SAME_MOVE = 10;
-	private static final int Y_POSITION_UPPER_BOUND = -100;
-	private static final int Y_POSITION_LOWER_BOUND = 475;
+	private static final int Y_POSITION_UPPER_BOUND = 0;
+	private static final int Y_POSITION_LOWER_BOUND = 700;
 	private static final int MAX_FRAMES_WITH_SHIELD = 500;
 	private final List<Integer> movePattern;
-	private boolean isShielded;
+	private final BooleanProperty shielded = new SimpleBooleanProperty(false);
 	private int consecutiveMovesInSameDirection;
 	private int indexOfCurrentMove;
 	private int framesWithShieldActivated;
@@ -31,7 +34,7 @@ public class Boss extends FighterPlane {
 		consecutiveMovesInSameDirection = 0;
 		indexOfCurrentMove = 0;
 		framesWithShieldActivated = 0;
-		isShielded = false;
+		shielded.set(false);
 		initializeMovePattern();
 	}
 
@@ -58,7 +61,7 @@ public class Boss extends FighterPlane {
 	
 	@Override
 	public void takeDamage() {
-		if (!isShielded) {
+		if (!shielded.get()) {
 			super.takeDamage();
 		}
 	}
@@ -73,7 +76,7 @@ public class Boss extends FighterPlane {
 	}
 
 	private void updateShield() {
-		if (isShielded) framesWithShieldActivated++;
+		if (shielded.get()) framesWithShieldActivated++;
 		else if (shieldShouldBeActivated()) activateShield();	
 		if (shieldExhausted()) deactivateShield();
 	}
@@ -109,16 +112,20 @@ public class Boss extends FighterPlane {
 	}
 
 	private void activateShield() {
-		isShielded = true;
+		shielded.set(true);
 	}
 
 	private void deactivateShield() {
-		isShielded = false;
+		shielded.set(false);
 		framesWithShieldActivated = 0;
 	}
 
 	public boolean isShielded() {
-		return isShielded;
+		return shielded.get();
 	}
+
+    public BooleanProperty shieldedProperty() {
+        return shielded;
+    }
 
 }

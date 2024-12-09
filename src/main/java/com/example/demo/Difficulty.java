@@ -4,19 +4,19 @@ public class Difficulty {
 	private static final String[] BACKGROUNDS = { "/com/example/demo/images/background1.jpg", "/com/example/demo/images/background2.jpg", "/com/example/demo/images/background3.jpg" };
 	private String background;
 	private int level;
-	private int totalEnemies;
-	private static final int[] KILLS_TO_ADVANCE = { 2, 5, 1 };
+	private int maxEnemies;
+	private static final int[] KILLS_TO_ADVANCE = { 10, 15, 1 };
 	private int killsToAdvance;
 	private double enemySpawnProbability;
-	private double bossSpawnProbability;
+	private boolean isBossBattle;
 	
 	public Difficulty(int level) {
 		this.setBackground(BACKGROUNDS[level % BACKGROUNDS.length]); 
 		this.setLevel(level);
-		this.setTotalEnemies(Math.min(10, 4 + level));
+		this.setMaxEnemies((level % 3 == 2) ? 1 : (Math.min(10, 4 + level)));
 		this.setKillsToAdvance(KILLS_TO_ADVANCE[level % KILLS_TO_ADVANCE.length]);
 		this.setEnemySpawnProbability((level % 3 == 2) ? 0 : (Math.min(1, 0.1 + level*0.05)));
-		this.setBossSpawnProbability((level % 3 == 2) ? 1 : 0);
+		this.setBossBattle(level % 3 == 2);
 	}
 
 	public String getBackground() {
@@ -35,12 +35,12 @@ public class Difficulty {
 		this.level = level;
 	}
 
-	public int getTotalEnemies() {
-		return totalEnemies;
+	public int getMaxEnemies() {
+		return maxEnemies;
 	}
 
-	public void setTotalEnemies(int totalEnemies) {
-		this.totalEnemies = totalEnemies;
+	public void setMaxEnemies(int maxEnemies) {
+		this.maxEnemies = maxEnemies;
 	}
 
 	public int getKillsToAdvance() {
@@ -59,12 +59,12 @@ public class Difficulty {
 		this.enemySpawnProbability = enemySpawnProbability;
 	}
 
-	public double getBossSpawnProbability() {
-		return bossSpawnProbability;
+	public boolean isBossBattle() {
+		return isBossBattle;
 	}
 
-	public void setBossSpawnProbability(double bossSpawnProbability) {
-		this.bossSpawnProbability = bossSpawnProbability;
+	public void setBossBattle(boolean BossBattle) {
+		this.isBossBattle = BossBattle;
 	}
 
 }

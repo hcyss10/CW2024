@@ -12,14 +12,13 @@ public class HeartDisplay {
 	private HBox container;
 	private double containerXPosition;
 	private double containerYPosition;
-	private int numberOfHeartsToDisplay;
+	private int hearts = 0;
 	
 	public HeartDisplay(double xPosition, double yPosition, int heartsToDisplay) {
 		this.containerXPosition = xPosition;
 		this.containerYPosition = yPosition;
-		this.numberOfHeartsToDisplay = heartsToDisplay;
 		initializeContainer();
-		initializeHearts();
+		setHearts(heartsToDisplay);
 	}
 	
 	private void initializeContainer() {
@@ -28,19 +27,23 @@ public class HeartDisplay {
 		container.setLayoutY(containerYPosition);		
 	}
 	
-	private void initializeHearts() {
-		for (int i = 0; i < numberOfHeartsToDisplay; i++) {
-			ImageView heart = new ImageView(new Image(getClass().getResource(HEART_IMAGE_NAME).toExternalForm()));
+	public void setHearts(int changed) {
+		if (changed > hearts) {
+			for(int i = hearts; i < changed; i++) {
+				ImageView heart = new ImageView(new Image(getClass().getResource(HEART_IMAGE_NAME).toExternalForm()));
 
-			heart.setFitHeight(HEART_HEIGHT);
-			heart.setPreserveRatio(true);
-			container.getChildren().add(heart);
+				heart.setFitHeight(HEART_HEIGHT);
+				heart.setPreserveRatio(true);
+				container.getChildren().add(heart);
+			}
+		}else if(changed < hearts) {
+			for(int i = hearts; i > changed; i--) {
+				if (!container.getChildren().isEmpty())
+					container.getChildren().remove(INDEX_OF_FIRST_ITEM);
+				
+			}
 		}
-	}
-	
-	public void removeHeart() {
-		if (!container.getChildren().isEmpty())
-			container.getChildren().remove(INDEX_OF_FIRST_ITEM);
+		hearts = changed;
 	}
 	
 	public HBox getContainer() {
