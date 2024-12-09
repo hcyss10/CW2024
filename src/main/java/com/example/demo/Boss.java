@@ -117,4 +117,8 @@ public class Boss extends FighterPlane {
 		framesWithShieldActivated = 0;
 	}
 
+	public boolean isShielded() {
+		return isShielded;
+	}
+
 }

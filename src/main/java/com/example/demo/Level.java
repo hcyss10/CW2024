@@ -5,13 +5,11 @@ import java.beans.PropertyChangeSupport;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javafx.animation.*;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.*;
 import javafx.scene.input.*;
-import javafx.util.Duration;
 
 public class Level {
 
@@ -124,12 +122,18 @@ public class Level {
 
 	public void goToNextLevel() {
 		gameLoop.stop();
-		support.firePropertyChange("currentLevel", this.currentLevel, this.currentLevel + 1);
-		//setChanged();
-		//notifyObservers(nextLevel);
+		support.firePropertyChange("currentLevel", currentLevel, currentLevel + 1);
+	}
+	
+	public void updateShield() {
+		if(boss.isShielded())
+			levelView.showShield();
+		else
+			levelView.hideShield();
 	}
 
 	private void updateScene() {
+		updateShield();
 		spawnEnemyUnits();
 		updateActors();
 		generateEnemyFire();
@@ -264,7 +268,7 @@ public class Level {
 	}
 
 	protected int getCurrentNumberOfEnemies() {
-		System.out.printf("%d\n", enemyUnits.size());
+		//System.out.printf("%d\n", enemyUnits.size());
 		return enemyUnits.size();
 	}
 
