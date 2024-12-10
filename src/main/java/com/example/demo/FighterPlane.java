@@ -16,10 +16,11 @@ public abstract class FighterPlane extends ActiveActorDestructible {
 	
 	@Override
 	public void takeDamage() {
-		health.set(health.get()-1);
-		if (health.get() == 0) {
+		int newHealth = getHealth() - 1;
+		if (newHealth <= 0) {
 			this.destroy();
 		}
+		health.set(newHealth);
 	}
 
 	protected double getProjectileXPosition(double xPositionOffset) {

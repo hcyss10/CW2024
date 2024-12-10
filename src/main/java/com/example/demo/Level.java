@@ -5,6 +5,9 @@ import java.beans.PropertyChangeSupport;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleExpression;
+import javafx.beans.binding.NumberExpression;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -102,7 +105,12 @@ public class Level {
 		initializeBackground();
 		initializeFriendlyUnits();
 		levelView.showHeartDisplay();
-		levelView.showShield();
+		levelView.showTitle(currentLevel + 1);
+		levelView.showKillCount(killsToAdvance);
+		if (isBossBattle) {
+			levelView.showShield();
+			levelView.showBossHealthBar();
+		}
 		return scene;
 	}
 
@@ -110,11 +118,18 @@ public class Level {
 		background.requestFocus();
 		gameLoop.start();
 		levelView.shieldImage.visibleProperty().bind(boss.shieldedProperty());
+		levelView.bossHealthBar.progressProperty().bind((DoubleExpression) boss.healthProperty().divide(100.0));
+		levelView.killCounter.textProperty().bind(
+			    Bindings.createStringBinding(
+			        () -> "Kills: " + user.numberOfKills.get() + "/" + killsToAdvance,
+			        user.numberOfKills
+			    )
+			);
 		user.healthProperty().addListener(new ChangeListener<Number>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				if (user.getHealth() == 0)
+				if (user.isDestroyed())
 					loseGame();
 				levelView.heartDisplay.setHearts(newValue.intValue());
 			}
