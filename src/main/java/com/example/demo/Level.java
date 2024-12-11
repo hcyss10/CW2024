@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleExpression;
-import javafx.beans.binding.NumberExpression;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -152,6 +151,7 @@ public class Level {
 		updateBackground();
 		spawnEnemyUnits();
 		updateActors();
+		generateUserFire();
 		generateEnemyFire();
 		handleEnemyPenetration();
 		handleUserProjectileCollisions();
@@ -167,24 +167,35 @@ public class Level {
 		background.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent e) {
 				KeyCode kc = e.getCode();
-				if (kc == KeyCode.UP) user.moveUp();
-				if (kc == KeyCode.DOWN) user.moveDown();
-				if (kc == KeyCode.SPACE) fireProjectile();
+				if (kc == KeyCode.UP) user.setMovingUp(true);
+				if (kc == KeyCode.DOWN) user.setMovingDown(true);
+				if (kc == KeyCode.RIGHT) user.setMovingRight(true);
+				if (kc == KeyCode.LEFT) user.setMovingLeft(true);
+				if (kc == KeyCode.SPACE) user.setFiring(true);
 			}
 		});
 		background.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent e) {
 				KeyCode kc = e.getCode();
-				if (kc == KeyCode.UP || kc == KeyCode.DOWN) user.stop();
+				if (kc == KeyCode.UP) user.setMovingUp(false);
+				if (kc == KeyCode.DOWN) user.setMovingDown(false);
+				if (kc == KeyCode.RIGHT) user.setMovingRight(false);
+				if (kc == KeyCode.LEFT) user.setMovingLeft(false);
+				if (kc == KeyCode.SPACE) user.setFiring(false);
 			}
 		});
 		root.getChildren().add(background);
 	}
 
-	private void fireProjectile() {
-		ActiveActorDestructible projectile = user.fireProjectile();
-		root.getChildren().add(projectile);
-		userProjectiles.add(projectile);
+	private void generateUserFire() {
+		friendlyUnits.forEach(user -> spawnUserProjectile(((FighterPlane) user).fireProjectile()));
+	}
+
+	private void spawnUserProjectile(ActiveActorDestructible projectile) {
+		if (projectile != null) {
+			root.getChildren().add(projectile);
+			userProjectiles.add(projectile);
+		}
 	}
 
 	private void generateEnemyFire() {
