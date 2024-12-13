@@ -46,7 +46,7 @@ public class Level {
 	
 	private LevelView levelView;
 
-	public Level(Difficulty difficulty, double screenHeight, double screenWidth, Controller myController) {
+	public Level(Difficulty difficulty, double screenWidth, double screenHeight, Controller myController) {
 		this.root = new Group();
 		this.scene = new Scene(root, screenWidth, screenHeight);
 		this.gameLoop = new GameLoop(this::updateScene, MILLISECOND_DELAY);
@@ -55,7 +55,6 @@ public class Level {
 		this.enemyUnits = new ArrayList<>();
 		this.userProjectiles = new ArrayList<>();
 		this.enemyProjectiles = new ArrayList<>();
-        //support = new PropertyChangeSupport(this);
 		this.myController = myController;
 
 		this.background = new ImageView(new Image(getClass().getResource(difficulty.getBackground()).toExternalForm()));
@@ -132,6 +131,7 @@ public class Level {
 	}
 	public void goToLevel(int level) {
 		try {
+			myController.addKills(user.getNumberOfKills());
 			myController.goToLevel(level);
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -139,8 +139,9 @@ public class Level {
 		}
 	}
 	
-	public void exit() {
-		myController.goToMenu();
+	public void exit(){
+		myController.addKills(user.getNumberOfKills());
+		myController.goToStartMenu();
 	}
 	
 	public int getCurrentLevel() {
@@ -284,6 +285,7 @@ public class Level {
 	}
 
 	protected void winGame() {
+		myController.unlockLevel(currentLevel + 1); 
 		levelView.showInGameMenu(WIN);
 	}
 

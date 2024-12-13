@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.io.IOException;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.layout.BorderPane;
@@ -44,7 +46,7 @@ public class InGameMenuController {
     }
 
     @FXML
-    private void exit(ActionEvent event) {
+    private void exit(ActionEvent event){
     	level.exit();
     }
 

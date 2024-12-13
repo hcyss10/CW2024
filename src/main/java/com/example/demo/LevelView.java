@@ -32,7 +32,7 @@ public class LevelView {
 	private final BossHealthBar bossHealthBar;
 	private final Pause pause;
 	private VBox inGameMenu;
-    private InGameMenuController InGameMenuController;
+    private InGameMenuController inGameMenuController;
 	
 	public LevelView(Group root, int heartsToDisplay, Level level, GameLoop gameLoop){
 		this.root = root;
@@ -51,11 +51,11 @@ public class LevelView {
 	    FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/demo/InGameMenu.fxml"));
 	    try {
 	        inGameMenu = loader.load();
-	        InGameMenuController = loader.getController();
-	        if (InGameMenuController != null) {
-	            InGameMenuController.initialize(level, gameLoop, this);
+	        inGameMenuController = loader.getController();
+	        if (inGameMenuController != null) {
+	            inGameMenuController.initialize(level, gameLoop, this);
 	        } else {
-	            System.err.println("Failed to load InGameMenuController");
+	            System.err.println("Failed to load inGameMenuController");
 	        }
 	    } catch (IOException e) {
 	        System.err.println("Error loading InGameMenu: " + e.getMessage());
@@ -91,7 +91,7 @@ public class LevelView {
 	public void showInGameMenu(MenuState state) {
 		pause.setDisable(true);
 		gameLoop.stop();
-		InGameMenuController.setMenuState(state);
+		inGameMenuController.setMenuState(state);
 		addNode(inGameMenu);
 	}
 	
