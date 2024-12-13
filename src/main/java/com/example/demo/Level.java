@@ -1,12 +1,11 @@
 package com.example.demo;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.DoubleExpression;
+import com.example.demo.controller.Controller;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -14,6 +13,8 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.*;
 import javafx.scene.input.*;
+import static com.example.demo.InGameMenuController.MenuState.*;
+
 
 public class Level {
 
@@ -24,7 +25,6 @@ public class Level {
 	private final double enemyMaximumYPosition;
 	private static final int PLAYER_INITIAL_HEALTH = 5;
 	private final Boss boss;
-    private PropertyChangeSupport support;
 	
 	private int currentLevel;
 	private int maxEnemies;
@@ -33,7 +33,8 @@ public class Level {
 	private boolean isBossBattle;
 
 	private final Group root;
-	private final GameLoop gameLoop;
+	protected final GameLoop gameLoop;
+	protected final Controller myController;
 	private final UserPlane user;
 	private final Scene scene;
 	private final ImageView background;
@@ -45,7 +46,7 @@ public class Level {
 	
 	private LevelView levelView;
 
-	public Level(Difficulty difficulty, double screenHeight, double screenWidth) {
+	public Level(Difficulty difficulty, double screenHeight, double screenWidth, Controller myController) {
 		this.root = new Group();
 		this.scene = new Scene(root, screenWidth, screenHeight);
 		this.gameLoop = new GameLoop(this::updateScene, MILLISECOND_DELAY);
@@ -54,7 +55,8 @@ public class Level {
 		this.enemyUnits = new ArrayList<>();
 		this.userProjectiles = new ArrayList<>();
 		this.enemyProjectiles = new ArrayList<>();
-        support = new PropertyChangeSupport(this);
+        //support = new PropertyChangeSupport(this);
+		this.myController = myController;
 
 		this.background = new ImageView(new Image(getClass().getResource(difficulty.getBackground()).toExternalForm()));
 		this.currentLevel = difficulty.getLevel();
@@ -65,14 +67,14 @@ public class Level {
 		this.screenHeight = screenHeight;
 		this.screenWidth = screenWidth;
 		this.enemyMaximumYPosition = screenHeight - SCREEN_HEIGHT_ADJUSTMENT;
-		this.levelView = instantiateLevelView();
 		friendlyUnits.add(user);
-		boss = new Boss();
+		boss = new Boss(difficulty);
+		this.levelView = instantiateLevelView();
 	}
-	
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        support.addPropertyChangeListener(pcl);
-    }
+
+	public int getKillsToAdvance() {
+		return killsToAdvance;
+	}
 
 	protected void initializeFriendlyUnits() {
 		getRoot().getChildren().add(getUser());
@@ -97,15 +99,16 @@ public class Level {
 	}
 
 	protected LevelView instantiateLevelView() {
-		return new LevelView(getRoot(), PLAYER_INITIAL_HEALTH);
+		return new LevelView(getRoot(), PLAYER_INITIAL_HEALTH, this, gameLoop);
 	}
 
 	public Scene initializeScene() {
 		initializeBackground();
 		initializeFriendlyUnits();
 		levelView.showHeartDisplay();
-		levelView.showTitle(currentLevel + 1);
-		levelView.showKillCount(killsToAdvance);
+		levelView.showPause();
+		levelView.showTitle();
+		levelView.showKillCount();
 		if (isBossBattle) {
 			levelView.showShield();
 			levelView.showBossHealthBar();
@@ -116,31 +119,34 @@ public class Level {
 	public void startGame() {
 		background.requestFocus();
 		gameLoop.start();
-		levelView.shieldImage.visibleProperty().bind(boss.shieldedProperty());
-		levelView.bossHealthBar.progressProperty().bind((DoubleExpression) boss.healthProperty().divide(100.0));
-		levelView.killCounter.textProperty().bind(
-			    Bindings.createStringBinding(
-			        () -> "Kills: " + user.numberOfKills.get() + "/" + killsToAdvance,
-			        user.numberOfKills
-			    )
-			);
 		user.healthProperty().addListener(new ChangeListener<Number>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				if (user.isDestroyed())
 					loseGame();
-				levelView.heartDisplay.setHearts(newValue.intValue());
+				levelView.getHeartDisplay().setHearts(newValue.intValue());
 			}
 		});
 		
 	}
-
-	public void goToNextLevel() {
-		gameLoop.stop();
-		support.firePropertyChange("currentLevel", currentLevel, currentLevel + 1);
+	public void goToLevel(int level) {
+		try {
+			myController.goToLevel(level);
+		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			e.printStackTrace();
+		}
 	}
 	
+	public void exit() {
+		myController.goToMenu();
+	}
+	
+	public int getCurrentLevel() {
+		return currentLevel;
+	}
+
 	public void updateBackground() {
 		if(background.getLayoutX() <= -screenWidth)
 			background.setLayoutX(0);
@@ -236,9 +242,8 @@ public class Level {
 
 	private void handleUserProjectileCollisions() {
 		user.incrementKillCount(handleCollisions(userProjectiles, enemyUnits));
-		if (userHasReachedKillTarget())
-			goToNextLevel();
-		
+		if (userHasReachedKillTarget()) 
+			winGame();
 	}
 
 	private void handleEnemyProjectileCollisions() {
@@ -275,12 +280,19 @@ public class Level {
 	}
 
 	protected void loseGame() {
-		gameLoop.stop();
-		levelView.showGameOverImage();
+		levelView.showInGameMenu(DEFEAT);
+	}
+
+	protected void winGame() {
+		levelView.showInGameMenu(WIN);
 	}
 
 	protected UserPlane getUser() {
 		return user;
+	}
+
+	protected Boss getBoss() {
+		return boss;
 	}
 
 	protected Group getRoot() {

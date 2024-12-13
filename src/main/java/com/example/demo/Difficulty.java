@@ -9,6 +9,7 @@ public class Difficulty {
 	private int killsToAdvance;
 	private double enemySpawnProbability;
 	private boolean isBossBattle;
+	private int bossHealth;
 	
 	public Difficulty(int level) {
 		this.setBackground(BACKGROUNDS[level % BACKGROUNDS.length]); 
@@ -17,6 +18,7 @@ public class Difficulty {
 		this.setKillsToAdvance(KILLS_TO_ADVANCE[level % KILLS_TO_ADVANCE.length]);
 		this.setEnemySpawnProbability((level % 3 == 2) ? 0 : (Math.min(1, 0.1 + level*0.05)));
 		this.setBossBattle(level % 3 == 2);
+		this.setBossHealth(100 + (level / 3)*10);
 	}
 
 	public String getBackground() {
@@ -65,6 +67,14 @@ public class Difficulty {
 
 	public void setBossBattle(boolean BossBattle) {
 		this.isBossBattle = BossBattle;
+	}
+
+	public int getBossHealth() {
+		return bossHealth;
+	}
+
+	public void setBossHealth(int bossHealth) {
+		this.bossHealth = bossHealth;
 	}
 
 }

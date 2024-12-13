@@ -1,83 +1,121 @@
 package com.example.demo;
 
+import java.io.IOException;
+
+import com.example.demo.InGameMenuController.MenuState;
+
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-//import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
 
 public class LevelView {
 	
 	private static final double HEART_DISPLAY_X_POSITION = 5;
 	private static final double HEART_DISPLAY_Y_POSITION = 5;
-	private static final int LOSS_SCREEN_X_POSITION = -160;
-	private static final int LOSS_SCREEN_Y_POSISITION = -375;
 	private static final int SHIELD_X_POSITION = 1245;
 	private static final int SHIELD_Y_POSITION = 5;
+	private static final int LEVEL_TITLE_X_POSITION = 500;
+	private static final int LEVEL_TITLE_Y_POSITION = 5;
+	private static final int KILL_COUNTER_X_POSITION = 500;
+	private static final int KILL_COUNTER_Y_POSITION = 20;
+	private static final int BOSS_HEALTH_BAR_X_POSITION = 500;
+	private static final int BOSS_HEALTH_BAR_Y_POSITION = 700;
+	private static final int PAUSE_X_POSITION = 475;
+	private static final int PAUSE_Y_POSITION = 5;
 	private final Group root;
-	private final GameOverImage gameOverImage;
-	protected final HeartDisplay heartDisplay;
-	protected final ShieldImage shieldImage;
-	protected final Label title;
-	protected final Label killCounter;
-	protected final ProgressBar bossHealthBar;
-	//private final Button pause;
-	//private final PauseMenu pauseMenu;
+	private final Level level;
+	private final GameLoop gameLoop;
+	private final HeartDisplay heartDisplay;
+	private final ShieldImage shieldImage;
+	private final LevelTitle levelTitle;
+	private final KillCounter killCounter;
+	private final BossHealthBar bossHealthBar;
+	private final Pause pause;
+	private VBox inGameMenu;
+    private InGameMenuController InGameMenuController;
 	
-	public LevelView(Group root, int heartsToDisplay) {
+	public LevelView(Group root, int heartsToDisplay, Level level, GameLoop gameLoop){
 		this.root = root;
 		this.heartDisplay = new HeartDisplay(HEART_DISPLAY_X_POSITION, HEART_DISPLAY_Y_POSITION, heartsToDisplay);
-		this.gameOverImage = new GameOverImage(LOSS_SCREEN_X_POSITION, LOSS_SCREEN_Y_POSISITION);
-		this.shieldImage = new ShieldImage(SHIELD_X_POSITION, SHIELD_Y_POSITION);
-		this.bossHealthBar = new ProgressBar(1);
-		this.title = new Label();
-		this.killCounter = new Label();
-		//this.pause = new Button("Pause");  
-        //root.getChildren().add(pause);
-		//this.pauseMenu = new PauseMenu();
+		this.shieldImage = new ShieldImage(level.getBoss(), SHIELD_X_POSITION, SHIELD_Y_POSITION);
+		this.bossHealthBar = new BossHealthBar(level.getBoss(), BOSS_HEALTH_BAR_X_POSITION, BOSS_HEALTH_BAR_Y_POSITION);
+		this.levelTitle = new LevelTitle(level.getCurrentLevel() + 1, LEVEL_TITLE_X_POSITION, LEVEL_TITLE_Y_POSITION);
+		this.killCounter = new KillCounter(level.getUser(), level.getKillsToAdvance(), KILL_COUNTER_X_POSITION, KILL_COUNTER_Y_POSITION);
+		this.pause = new Pause(this, PAUSE_X_POSITION, PAUSE_Y_POSITION); 
+		this.level = level;
+		this.gameLoop = gameLoop;
+		loadInGameMenu();
+	}
+	
+	private void loadInGameMenu() {
+	    FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/demo/InGameMenu.fxml"));
+	    try {
+	        inGameMenu = loader.load();
+	        InGameMenuController = loader.getController();
+	        if (InGameMenuController != null) {
+	            InGameMenuController.initialize(level, gameLoop, this);
+	        } else {
+	            System.err.println("Failed to load InGameMenuController");
+	        }
+	    } catch (IOException e) {
+	        System.err.println("Error loading InGameMenu: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	}
+
+	
+	public void addNode(javafx.scene.Node node) {
+		if (!root.getChildren().contains(node))
+			root.getChildren().add(node);
+	}
+
+	
+	public void removeNode(javafx.scene.Node node) {
+		if (root.getChildren().contains(node))
+			root.getChildren().remove(node);
+	}
+
+	protected HeartDisplay getHeartDisplay() {
+		return heartDisplay;
 	}
 	
 	public void showHeartDisplay() {
-		root.getChildren().add(heartDisplay.getContainer());
-	}
-	
-	public void showGameOverImage() {
-		root.getChildren().add(gameOverImage);
+		addNode(heartDisplay.getContainer());
 	}
 
 	public void showShield() {
-		root.getChildren().add(shieldImage);
+		addNode(shieldImage);
+		
 	}
 	
-	public void showKillCount(int killsToAdvance) {
-		killCounter.setText("Kills: 0/" + killsToAdvance);
-		killCounter.setLayoutX(500);
-		killCounter.setLayoutY(20);
-		killCounter.setPrefSize(300, 10);
-		killCounter.setVisible(true);
-		root.getChildren().add(killCounter);
+	public void showInGameMenu(MenuState state) {
+		pause.setDisable(true);
+		gameLoop.stop();
+		InGameMenuController.setMenuState(state);
+		addNode(inGameMenu);
 	}
 	
-	public void showTitle(int level) {
-		title.setText("Level: " + level);
-		title.setLayoutX(500);
-		title.setLayoutY(5);
-		title.setPrefSize(300, 10);
-		title.setVisible(true);
-		root.getChildren().add(title);
+	public void hideInGameMenu() {
+		pause.setDisable(false);
+		removeNode(inGameMenu);
+	}
+	
+	public void showPause() {
+		addNode(pause);
+	}
+	
+	public void showKillCount() {
+		addNode(killCounter);
+
+	}
+	
+	public void showTitle() {
+		addNode(levelTitle);
 	}
 	
 	public void showBossHealthBar() {
-		bossHealthBar.setLayoutX(500);
-		bossHealthBar.setLayoutY(700);
-		bossHealthBar.setPrefSize(300, 30);
-		bossHealthBar.setVisible(true);
-		root.getChildren().add(bossHealthBar);
+		addNode(bossHealthBar);
 	}
-	
-	/*public void showPauseMenu() {
-		//stop_timeline
-		root.getChildren().add(pauseMenu);
-	}*/
 	
 
 }
