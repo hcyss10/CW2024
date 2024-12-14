@@ -1,12 +1,12 @@
 package com.example.demo;
 
-import javafx.scene.control.Label;
+import javafx.scene.text.Text;
 
-public class LevelTitle extends Label{
+public class LevelTitle extends Text{
 	public LevelTitle(int level, int xPosition, int yPosition) {
 		super("level: " + level);
 		this.setLayoutX(xPosition);
 		this.setLayoutY(yPosition);
-		this.setPrefSize(300, 10);
+        this.getStyleClass().add("Text");
 	}
 }

@@ -19,6 +19,9 @@ public class Controller {
 	private final Stage stage;
 	private static final int SCREEN_WIDTH = 1300;
 	private static final int SCREEN_HEIGHT = 750;
+	String css = getClass().getResource("/com/example/demo/styling.css").toExternalForm();
+
+	private StartMenuController startMenuController;
 	
 	private final IntegerProperty kills = new SimpleIntegerProperty();
 	private final IntegerProperty level = new SimpleIntegerProperty();
@@ -44,7 +47,6 @@ public class Controller {
         return level;
     }
 
-	private StartMenuController startMenuController;
 
 	public Controller(Stage stage) {
 		this.stage = stage;
@@ -63,6 +65,7 @@ public class Controller {
 			InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		Level myLevel = new Level(new Difficulty(level), SCREEN_WIDTH, SCREEN_HEIGHT, this);
 		Scene scene = myLevel.initializeScene();
+	    scene.getStylesheets().add(css);
 		stage.setScene(scene);
 		myLevel.startGame();
 	}
@@ -78,6 +81,7 @@ public class Controller {
 	            System.err.println("Failed to load startMenuController");
 	        }
 			Scene scene = new Scene(root, SCREEN_WIDTH, SCREEN_HEIGHT);
+		    scene.getStylesheets().add(css);
 			stage.setScene(scene);
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -1,9 +1,9 @@
 package com.example.demo;
 
 import javafx.beans.binding.Bindings;
-import javafx.scene.control.Label;
+import javafx.scene.text.Text;
 
-public class KillCounter extends Label{
+public class KillCounter extends Text{
 	
 
 	public KillCounter(UserPlane user, int killsToAdvance, int xPosition, int yPosition) {
@@ -16,7 +16,7 @@ public class KillCounter extends Label{
 			);
 		this.setLayoutX(xPosition);
 		this.setLayoutY(yPosition);
-		this.setPrefSize(300, 10);
+        this.getStyleClass().add("Text");
 		
 	}
 

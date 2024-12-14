@@ -15,12 +15,12 @@ public class LevelView {
 	private static final int SHIELD_X_POSITION = 1245;
 	private static final int SHIELD_Y_POSITION = 5;
 	private static final int LEVEL_TITLE_X_POSITION = 500;
-	private static final int LEVEL_TITLE_Y_POSITION = 5;
+	private static final int LEVEL_TITLE_Y_POSITION = 25;
 	private static final int KILL_COUNTER_X_POSITION = 500;
-	private static final int KILL_COUNTER_Y_POSITION = 20;
+	private static final int KILL_COUNTER_Y_POSITION = 45;
 	private static final int BOSS_HEALTH_BAR_X_POSITION = 500;
 	private static final int BOSS_HEALTH_BAR_Y_POSITION = 700;
-	private static final int PAUSE_X_POSITION = 475;
+	private static final int PAUSE_X_POSITION = 450;
 	private static final int PAUSE_Y_POSITION = 5;
 	private final Group root;
 	private final Level level;

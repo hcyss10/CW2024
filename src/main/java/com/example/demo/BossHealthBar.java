@@ -12,6 +12,7 @@ public class BossHealthBar extends ProgressBar{
 	    this.setLayoutX(xPosition);
 	    this.setLayoutY(yPosition);
 	    this.setPrefSize(300, 30);
+        this.getStyleClass().add("boss-health-bar");
 	}
 
 }

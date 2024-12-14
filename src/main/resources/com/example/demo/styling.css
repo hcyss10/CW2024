@@ -1,0 +1,54 @@
+Text, .Text{
+    -fx-fill: white;
+    -fx-font-family: "Arial Black";
+    -fx-font-size: 24px; /* Font size */
+}
+
+.button {
+    -fx-text-fill: white;
+    -fx-font-family: "Arial Black"; /* Adjust the font to your preference */
+    -fx-border-color: white; /* Outline color */
+    -fx-background-color: transparent; /* Transparent background */
+    -fx-border-width: 2px; /* Border thickness */
+    -fx-font-size: 14px; /* Font size */
+    -fx-padding: 10px 10px; /* Padding inside the button */
+    -fx-border-radius: 15px; /* Rounds the border */
+    -fx-background-radius: 15px; /* Matches border radius */
+    -fx-cursor: hand; /* Changes the cursor to a pointer when hovering */
+    -fx-transition: transform 0.2s ease-in-out; /* Smooth transition for hover effect */
+}
+
+.button:hover {
+    -fx-scale-x: 1.1; /* Slightly increase width */
+    -fx-scale-y: 1.1; /* Slightly increase height */
+}
+
+#InGameMenu {
+    -fx-border-color: white; /* Outline color */
+    -fx-background-color: transparent; /* Transparent background */
+    -fx-border-width: 2px; /* Border thickness */
+    -fx-border-radius: 15px; /* Rounds the border */
+    -fx-background-radius: 15px; /* Matches border radius */
+}
+
+/* Custom boss health bar styling */
+.boss-health-bar {
+    -fx-background-color: transparent;       /* Transparent background */
+    -fx-border-color: white;                 /* White border */
+    -fx-border-width: 2;                     /* Border thickness */
+    -fx-border-radius: 15;                   /* Rounded corners for border */
+    -fx-background-radius: 15;               /* Rounded corners for background */
+}
+
+/* Styling for the progress fill */
+.boss-health-bar > .bar {
+    -fx-background-color: white;            /* Fill color (white) */
+    -fx-background-radius: 15;              /* Match the rounded corners */
+}
+
+/* Styling for the unfilled (track) part */
+.boss-health-bar > .track {
+    -fx-background-color: transparent;      /* Make the unfilled part transparent */
+    -fx-background-radius: 15;              /* Match the rounded corners */
+}
+

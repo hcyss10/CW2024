@@ -33,8 +33,8 @@ public class Level {
 	private boolean isBossBattle;
 
 	private final Group root;
-	protected final GameLoop gameLoop;
-	protected final Controller myController;
+	private final GameLoop gameLoop;
+	private final Controller myController;
 	private final UserPlane user;
 	private final Scene scene;
 	private final ImageView background;

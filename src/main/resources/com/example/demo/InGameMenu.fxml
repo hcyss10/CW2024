@@ -5,29 +5,29 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<VBox layoutX="500" layoutY="100" prefWidth="300" prefHeight="550" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InGameMenuController">
+<VBox fx:id="InGameMenu" layoutX="500" layoutY="100" prefHeight="550" prefWidth="300" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InGameMenuController">
    <children>
-      <BorderPane prefHeight="200.0" prefWidth="300">
+      <BorderPane prefHeight="10" prefWidth="300">
          <center>
             <Text fx:id="menuTitle" strokeType="OUTSIDE" strokeWidth="0.0" text="Menu" BorderPane.alignment="CENTER" />
          </center>
       </BorderPane>
-      <BorderPane fx:id="resumeButtonPane" prefHeight="200.0" prefWidth="300">
+      <BorderPane fx:id="resumeButtonPane" prefHeight="150" prefWidth="300">
          <center>
             <Button mnemonicParsing="false" onAction="#resume" text="Resume" BorderPane.alignment="CENTER" />
          </center>
       </BorderPane>
-      <BorderPane fx:id="nextButtonPane" prefHeight="200.0" prefWidth="300">
+      <BorderPane fx:id="nextButtonPane" prefHeight="150" prefWidth="300">
          <center>
             <Button mnemonicParsing="false" onAction="#next" text="Next" BorderPane.alignment="CENTER" />
          </center>
       </BorderPane>
-      <BorderPane fx:id="retryButtonPane" prefHeight="200.0" prefWidth="300">
+      <BorderPane fx:id="retryButtonPane" prefHeight="150" prefWidth="300">
          <center>
             <Button mnemonicParsing="false" onAction="#retry" text="Retry" BorderPane.alignment="CENTER" />
          </center>
       </BorderPane>
-      <BorderPane fx:id="exitButtonPane" prefHeight="200.0" prefWidth="300">
+      <BorderPane fx:id="exitButtonPane" prefHeight="150" prefWidth="300">
          <center>
             <Button mnemonicParsing="false" onAction="#exit" text="Exit" BorderPane.alignment="CENTER" />
          </center>
